@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  solr:
+    image: solr:alpine
+    volumes:
+      - ./solr/collection1:/opt/solr/server/solr/collection1
+      - ./solr/logadmin:/opt/solr/server/solr/logadmin
+    # Expose the solr port iff you need to collect the logs of remote machines
+    ports:
+      - 10000:8983
+
+  # log-collector:
+  #   image: dbjtech/docker-log-collector
+  #   depends_on:
+  #     - solr
+  #   environment:
+  #     - TZ=Asia/Shanghai
+  #     - VERBOSE=true
+  #     - SOLR_HOST=solr
+  #     - SOLR_PORT=8983
+  #     - LOG_HOST_NAME=localhost
+  #   volumes:
+  #     # Run the following cmd in powershell if you are using windows docker
+  #     # $Env:COMPOSE_CONVERT_WINDOWS_PATHS=1
+  #     - /var/run/docker.sock:/var/run/docker.sock
+
+  # search:
+  #   build: ./
+  #   depends_on:
+  #     - solr
+  #   environment:
+  #     - SolrHost=solr
+  #     - SolrPort=8983
+  #   ports:
+  #     - 10001:80
