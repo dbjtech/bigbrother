@@ -1,4 +1,5 @@
 const Koa = require('koa')
+const serve = require('koa-static')
 const session = require('koa-session')
 const Router = require('koa-router')
 // const cors = require('@koa/cors')
@@ -106,6 +107,7 @@ app.use(async (ctx, next) => {
 
 // remove this in production
 // app.use(cors({ credentials: true }))
+app.use(serve(`${__dirname}/../portal/dist`))
 app.use(koaBody())
 qs(app)
 app.keys = ['bigbrother']
@@ -113,7 +115,22 @@ app.use(session(app))
 app.use(router.routes())
 app.use(router.allowedMethods())
 
-const port = process.env.PORT || 3000
+function getPort() {
+	let port = process.env.PORT
+	if (!port) {
+		const index = process.argv.indexOf('--port')
+		if (index !== -1) {
+			port = process.argv[index + 1]
+		}
+	}
+	port = Number(port)
+	if (port <= 0 || port > 65535) {
+		throw new Error('Invalid port')
+	}
+	return port
+}
+
+const port = getPort() || 3000
 app.listen(port, () => {
 	console.log('server start @', port)
 })

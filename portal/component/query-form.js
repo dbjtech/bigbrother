@@ -8,6 +8,9 @@ import { QuerySelect } from './select'
 const TimeFormat = 'YYYY-MM-DD HH:mm:ss'
 
 function getTimestamp(line) {
+	if (!line) {
+		return null
+	}
 	const raw = line.replace(/<\/?em>/g, '')
 	const m = /(\d\d)(\d\d)(\d\d) (\d\d):(\d\d):(\d\d)/.exec(raw)
 	if (!m) {
