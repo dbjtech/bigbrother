@@ -10,8 +10,8 @@ const config = _.defaults({
 	logMaxTime: process.env.LOG_MAX_TIME,
 }, {
 	verbose: true, // print the logs it collects
-	solrHost: '172.16.0.133', // solr host
-	// host: 'localhost',
+	// solrHost: '172.16.0.133', // solr host
+	host: 'localhost',
 	solrPort: 10000, // solr port
 	solrCollectionName: 'collection1', // solr collection name
 	logHostName: 'UNKNOW_HOST', // machine name set to the doc

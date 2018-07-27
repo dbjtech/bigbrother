@@ -130,7 +130,32 @@ function getPort() {
 	return port
 }
 
+async function initAdmin() {
+	if (!await solr.isAdminCoreEmpty()) {
+		return true
+	}
+	const username = process.env.DEFAULT_ADMIN_USERNAME || 'admin'
+	const password = process.env.DEFAULT_ADMIN_PASSWORD || 'admin'
+	const rs = await solr.addAdminUser(username, password)
+	return rs
+}
+
+function ensureAdmin() {
+	console.log('Ensure admin account')
+	initAdmin().then((ok) => {
+		if (!ok) {
+			setTimeout(ensureAdmin, 5000)
+		} else {
+			console.log('Ensure admin account finished')
+		}
+	}).catch((e) => {
+		console.log(e.message)
+		setTimeout(ensureAdmin, 5000)
+	})
+}
+
 const port = getPort() || 3000
 app.listen(port, () => {
 	console.log('server start @', port)
+	ensureAdmin()
 })

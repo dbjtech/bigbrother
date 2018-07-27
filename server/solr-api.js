@@ -115,6 +115,19 @@ async function checkAdminPassword(username, password) {
 	return !!(user && user.username === username && user.password === password)
 }
 
+async function isAdminCoreEmpty() {
+	const client = new SolrNode(R.merge(SolrNodeConfig, { core: 'logadmin' }))
+	const query = client.query().q('*:*')
+	const rs = await client.search(query)
+	return rs.response.numFound === 0
+}
+
+async function addAdminUser(username, password) {
+	const client = new SolrNode(R.merge(SolrNodeConfig, { core: 'logadmin' }))
+	const rs = await client.update({ username, password, id: Date.now() }, { commit: true })
+	return rs.responseHeader.status === 0
+}
+
 const getGroups = R.pipe(
 	R.path(['grouped']),
 	R.values(),
@@ -138,4 +151,6 @@ module.exports = {
 	checkAdminPassword,
 	getHostnames: () => queryGroup('hostname'),
 	getAppNames: () => queryGroup('types'),
+	isAdminCoreEmpty,
+	addAdminUser,
 }
