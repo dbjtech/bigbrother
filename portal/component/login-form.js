@@ -15,13 +15,17 @@ class LoginForm_ extends React.Component {
 	})
 
 	onSubmit = async () => {
-		const { username, password } = await this.getFormValues()
 		try {
+			const { username, password } = await this.getFormValues()
 			const rs = await api.login(username, password)
 			message.info(`Welcome ${rs}`)
 			this.props.onLogin(rs)
 		} catch (e) {
-			message.error(e.message)
+			if (e instanceof Error) {
+				message.error(e.message)
+			} else {
+				message.error(`Invalid ${Object.keys(e).join(',')}`)
+			}
 		}
 	}
 	
