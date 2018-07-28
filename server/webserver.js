@@ -30,48 +30,40 @@ const Response = {
 	},
 }
 
-function ensureLogin(ctx) {
+function ensureLogin(ctx, next) {
 	if (!ctx.session.username) {
 		throw Response.Need_Login
 	}
+	return next()
 }
 
-router.get('/api/logs', async (ctx) => {
-	ensureLogin(ctx)
-	const options = ctx.request.query
-	if (_.isEmpty(options)) {
+function ensureParams(ctx, next) {
+	const { body, query } = ctx.request
+	ctx.data = _.merge({}, body, query)
+	if (_.isEmpty(ctx.data)) {
 		throw Response.Invalid_Params
 	}
-	const rs = await solr.queryKeyword(options)
-	ctx.body = {
-		status_code: 200,
-		result: rs,
-	}
-})
+	return next()
+}
 
-router.get('/api/hostnames', async (ctx) => {
-	ensureLogin(ctx)
-	ctx.body = {
-		status_code: 200,
-		result: await solr.getHostnames(),
+function bindAPI(api) {
+	return async (ctx, next) => {
+		let rs = api(ctx.data, ctx)
+		if (rs instanceof Promise) {
+			rs = await rs
+		}
+		ctx.body = {
+			status_code: 200,
+			result: rs,
+		}
+		await next()
 	}
-})
+}
 
-router.get('/api/appnames', async (ctx) => {
-	ensureLogin(ctx)
-	ctx.body = {
-		status_code: 200,
-		result: await solr.getAppNames(),
-	}
-})
-
-router.get('/api/user', async (ctx) => {
-	ensureLogin(ctx)
-	ctx.body = {
-		status_code: 200,
-		result: ctx.session.username,
-	}
-})
+router.get('/api/logs', ensureLogin, ensureParams, bindAPI(solr.queryKeyword))
+router.get('/api/hostnames', ensureLogin, bindAPI(solr.getHostnames))
+router.get('/api/appnames', ensureLogin, bindAPI(solr.getAppNames))
+router.get('/api/user', ensureLogin, ensureParams, bindAPI((__, ctx) => ctx.session.username))
 
 router.post('/api/login', async (ctx) => {
 	const { username, password } = ctx.request.body
