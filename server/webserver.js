@@ -7,6 +7,19 @@ const koaBody = require('koa-body')
 const qs = require('koa-qs')
 const _ = require('lodash')
 const solr = require('./solr-api.js')
+const log4js = require('log4js')
+
+log4js.configure({
+	appenders: [{
+		type: 'stdout',
+		// category: '',
+		layout: {
+			type: 'pattern',
+			pattern: '[%.1p %d{yyMMdd hh:mm:ss O}] [%c] %m',
+		},
+	}],
+})
+const console = log4js.getLogger('webserver')
 
 const app = new Koa()
 const router = new Router()
@@ -135,21 +148,21 @@ async function initAdmin() {
 }
 
 function ensureAdmin() {
-	console.log('Ensure admin account')
+	console.info('Ensure admin account')
 	initAdmin().then((ok) => {
 		if (!ok) {
 			setTimeout(ensureAdmin, 5000)
 		} else {
-			console.log('Ensure admin account finished')
+			console.info('Ensure admin account finished')
 		}
 	}).catch((e) => {
-		console.log(e.message)
+		console.info(e.message)
 		setTimeout(ensureAdmin, 5000)
 	})
 }
 
 const port = getPort() || 3000
 app.listen(port, () => {
-	console.log('server start @', port)
+	console.info('server start @', port)
 	ensureAdmin()
 })
