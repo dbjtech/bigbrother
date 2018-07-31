@@ -10,6 +10,11 @@ const SolrNodeConfig = {
 	debugLevel: config.verbose ? 'DEBUG' : 'INFO',
 }
 
+const Core = {
+	log: new SolrNode(SolrNodeConfig),
+	admin: new SolrNode(R.merge(SolrNodeConfig, { core: 'logadmin' })),
+}
+
 function setQuery(query, options) {
 	const defaults = {
 		keyword: '*',
@@ -88,7 +93,7 @@ const getSolrRawRows = (keyword, rs) => R.pipe(
 const getSolrFirstDoc = R.path(['response', 'docs', 0])
 
 async function queryKeyword(options) {
-	const client = new SolrNode(SolrNodeConfig)
+	const client = Core.log
 	const rs = await client.search(setQuery(client.query(), options))
 	let rows = getSolrHighlightRows(rs)
 	if (!rows.length) {
@@ -104,27 +109,43 @@ async function queryKeyword(options) {
 	}
 }
 
-async function checkAdminPassword(username, password) {
-	const client = new SolrNode(R.merge(SolrNodeConfig, { core: 'logadmin' }))
+async function getAdminUser({ username, password }) {
+	const client = Core.admin
 	const query = client.query().q('*:*').fq([
 		{ field: 'username', value: username },
-		{ field: 'password', value: password },
+		{ field: 'password', value: password || '*' },
 	])
 	const rs = await client.search(query)
 	const user = getSolrFirstDoc(rs)
-	return !!(user && user.username === username && user.password === password)
+	const found = password ?
+		!!(user && user.username === username && user.password === password) :
+		!!(user && user.username === username)
+	return found ? user : null
 }
 
 async function isAdminCoreEmpty() {
-	const client = new SolrNode(R.merge(SolrNodeConfig, { core: 'logadmin' }))
+	const client = Core.admin
 	const query = client.query().q('*:*')
 	const rs = await client.search(query)
 	return rs.response.numFound === 0
 }
 
-async function addAdminUser(username, password) {
-	const client = new SolrNode(R.merge(SolrNodeConfig, { core: 'logadmin' }))
+async function addAdminUser({ username, password }) {
+	if (await getAdminUser({ username })) {
+		return false
+	}
+	const client = Core.admin
 	const rs = await client.update({ username, password, id: Date.now() }, { commit: true })
+	return rs.responseHeader.status === 0
+}
+
+async function removeAdminUser({ username, password }) {
+	const user = await getAdminUser({ username, password })
+	if (!user) {
+		return false
+	}
+	const client = Core.admin
+	const rs = await client.delete({ id: user.id }, { commit: true })
 	return rs.responseHeader.status === 0
 }
 
@@ -148,9 +169,10 @@ async function queryGroup(field) {
 
 module.exports = {
 	queryKeyword,
-	checkAdminPassword,
+	getAdminUser,
 	getHostnames: () => queryGroup('hostname'),
 	getAppNames: () => queryGroup('types'),
 	isAdminCoreEmpty,
 	addAdminUser,
+	removeAdminUser,
 }

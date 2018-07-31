@@ -12,9 +12,9 @@ function getFetchOptions() {
 	}
 }
 
-function postFetchOptions(form) {
+function postFetchOptions(form, action = 'POST') {
 	return {
-		method: 'POST',
+		method: action,
 		mode: 'cors',
 		credentials: 'same-origin',
 		headers: {
@@ -64,6 +64,22 @@ async function queryUser() {
 	return await ensureResponse(rs)
 }
 
+async function addUser(username, password) {
+	const form = new URLSearchParams()
+	form.append('username', username)
+	form.append('password', password)
+	const rs = await fetch(`${config.server}/user`, postFetchOptions(form))
+	return await ensureResponse(rs)
+}
+
+async function deleteUser(username, password) {
+	const form = new URLSearchParams()
+	form.append('username', username)
+	form.append('password', password)
+	const rs = await fetch(`${config.server}/user`, postFetchOptions(form, 'DELETE'))
+	return await ensureResponse(rs)
+}
+
 async function login(username, password) {
 	const form = new URLSearchParams()
 	form.append('username', username)
@@ -82,6 +98,8 @@ export default {
 	queryHostnames,
 	queryAppNames,
 	queryUser,
+	addUser,
+	deleteUser,
 	login,
 	logout,
 }

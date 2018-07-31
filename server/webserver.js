@@ -63,14 +63,16 @@ function bindAPI(api) {
 router.get('/api/logs', ensureLogin, ensureParams, bindAPI(solr.queryKeyword))
 router.get('/api/hostnames', ensureLogin, bindAPI(solr.getHostnames))
 router.get('/api/appnames', ensureLogin, bindAPI(solr.getAppNames))
-router.get('/api/user', ensureLogin, ensureParams, bindAPI((__, ctx) => ctx.session.username))
+router.get('/api/user', ensureLogin, bindAPI((__, ctx) => ctx.session.username))
+router.post('/api/user', ensureLogin, ensureParams, bindAPI(solr.addAdminUser))
+router.delete('/api/user', ensureLogin, ensureParams, bindAPI(solr.removeAdminUser))
 
 router.post('/api/login', async (ctx) => {
 	const { username, password } = ctx.request.body
 	if (!username || !password) {
 		throw Response.Invalid_Params
 	}
-	if (!await solr.checkAdminPassword(username, password)) {
+	if (!await solr.getAdminUser({ username, password })) {
 		throw Response.Invalid_User
 	}
 	ctx.session.username = username
@@ -100,7 +102,7 @@ app.use(async (ctx, next) => {
 // remove this in production
 // app.use(cors({ credentials: true }))
 app.use(serve(`${__dirname}/../portal/dist`))
-app.use(koaBody())
+app.use(koaBody({ strict: false }))
 qs(app)
 app.keys = ['bigbrother']
 app.use(session(app))
