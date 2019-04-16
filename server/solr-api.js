@@ -117,9 +117,9 @@ async function getAdminUser({ username, password }) {
 	])
 	const rs = await client.search(query)
 	const user = getSolrFirstDoc(rs)
-	const found = password ?
-		!!(user && user.username === username && user.password === password) :
-		!!(user && user.username === username)
+	const found = password
+		? !!(user && user.username === username && user.password === password)
+		: !!(user && user.username === username)
 	return found ? user : null
 }
 

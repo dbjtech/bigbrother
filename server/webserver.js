@@ -6,18 +6,20 @@ const Router = require('koa-router')
 const koaBody = require('koa-body')
 const qs = require('koa-qs')
 const _ = require('lodash')
-const solr = require('./solr-api.js')
 const log4js = require('log4js')
+const solr = require('./solr-api.js')
 
 log4js.configure({
-	appenders: [{
-		type: 'stdout',
-		// category: '',
-		layout: {
-			type: 'pattern',
-			pattern: '[%.1p %d{yyMMdd hh:mm:ss O}] [%c] %m',
+	appenders: {
+		dbj: {
+			type: 'stdout',
+			layout: {
+				type: 'pattern',
+				pattern: '[%.1p %d{yyMMdd hh:mm:ss O}] [%c] %m',
+			},
 		},
-	}],
+	},
+	categories: { default: { appenders: ['dbj'], level: 'debug' } },
 })
 const console = log4js.getLogger('webserver')
 
@@ -143,7 +145,7 @@ async function initAdmin() {
 	}
 	const username = process.env.DEFAULT_ADMIN_USERNAME || 'admin'
 	const password = process.env.DEFAULT_ADMIN_PASSWORD || 'admin'
-	const rs = await solr.addAdminUser(username, password)
+	const rs = await solr.addAdminUser({ username, password })
 	return rs
 }
 
