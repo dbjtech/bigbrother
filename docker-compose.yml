@@ -4,11 +4,11 @@ services:
   solr:
     image: solr:alpine
     volumes:
-      - ./solr/collection1:/opt/solr/server/solr/collection1
-      - ./solr/logadmin:/opt/solr/server/solr/logadmin
+      - ./solr/collection1:/var/solr/data/collection1
+      - ./solr/logadmin:/var/solr/data/logadmin
     # Expose the solr port iff you need to collect the logs of remote machines
-    # ports:
-    #   - 10000:8983
+    ports:
+      - 10000:8983
 
   log-collector:
     image: dbjtech/docker-log-collector
@@ -35,4 +35,4 @@ services:
       - SOLR_PORT=8983
       - VERBOSE=true
     ports:
-      - 8080:80
+      - 3000:80

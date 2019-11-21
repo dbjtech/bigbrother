@@ -2,7 +2,7 @@ const Koa = require('koa')
 const serve = require('koa-static')
 const session = require('koa-session')
 const Router = require('koa-router')
-// const cors = require('@koa/cors')
+const cors = require('@koa/cors')
 const koaBody = require('koa-body')
 const qs = require('koa-qs')
 const _ = require('lodash')
@@ -115,7 +115,7 @@ app.use(async (ctx, next) => {
 })
 
 // remove this in production
-// app.use(cors({ credentials: true }))
+app.use(cors({ credentials: true }))
 app.use(serve(`${__dirname}/../portal/dist`))
 app.use(koaBody({ strict: false }))
 qs(app)

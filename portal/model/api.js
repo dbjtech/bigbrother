@@ -1,14 +1,14 @@
 
 const config = {
-	server: 'api',
-	// server: 'http://localhost:8000/api',
+	// server: 'api',
+	server: 'http://localhost:3000/api',
 }
 
 function getFetchOptions() {
 	return {
 		method: 'GET',
 		mode: 'cors',
-		credentials: 'same-origin',
+		credentials: 'include',
 	}
 }
 
@@ -16,7 +16,7 @@ function postFetchOptions(form, action = 'POST') {
 	return {
 		method: action,
 		mode: 'cors',
-		credentials: 'same-origin',
+		credentials: 'include',
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
 		},

@@ -1,3 +1,5 @@
+import R from 'ramda'
+import fileSaver from 'file-saver'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Layout, Spin } from 'antd'
@@ -21,6 +23,9 @@ class App extends React.Component {
 		api.queryUser()
 			.then(rs => this.setState({ username: rs, loading: false }))
 			.catch(() => this.setState({ loading: false }))
+
+		window.R = R
+		window.fileSaver = fileSaver
 	}
 	onTableData = rows => this.setState({ rows })
 	onLogin = username => this.setState({ username })
