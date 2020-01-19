@@ -66,7 +66,7 @@ const getSolrHighlightRows = R.pipe(
 	// 用换行符加行首[进行切割，这样可以使非[I YYMMDD HH:mm:ss]开头的日志保留在同一行。
 	// 这种日志通常是错误栈的打印，或者console.log中带了\n的情况。
 	// FEFF是UTF8 BOM，日志从文件导入的可能会带这个字符
-	R.split(/\r?\n\uFEFF?\[/),
+	R.split(/\r?\n\uFEFF?/),
 	// 第一行必定是空行，可以去掉
 	R.tail,
 	// 留下solr标记了高亮的行
@@ -74,7 +74,7 @@ const getSolrHighlightRows = R.pipe(
 	// 把没有进行切割的换行符替换为<br/>方便前端显示
 	R.map(e => R.replace(/\r?\n/g, '<br/>', e)),
 	// 把[加回行首
-	R.map(e => `[${e}`),
+	// R.map(e => `[${e}`),
 	// 不足之处：如果第一个文档第一行没有时间戳，会多了一个[
 )
 
@@ -83,11 +83,11 @@ const getSolrRawRows = (keyword, rs) => R.pipe(
 	R.pluck('packet_content'),
 	R.prepend(''),
 	R.join('\n'),
-	R.split(/\r?\n\uFEFF?\[/),
+	R.split(/\r?\n\uFEFF?/),
 	R.tail,
 	R.filter(e => !keyword || keyword === '*' || e.indexOf(keyword) !== -1),
 	R.map(e => R.replace(/\r?\n/g, '<br/>', e)),
-	R.map(e => `[${e}`),
+	// R.map(e => `[${e}`),
 )(rs)
 
 const getSolrFirstDoc = R.path(['response', 'docs', 0])
