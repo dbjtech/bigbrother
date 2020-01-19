@@ -10,6 +10,7 @@ docker-compose up -d
 2. build portal
 ```bash
 cd portal
+npm i
 npm run-script build
 ```
 
