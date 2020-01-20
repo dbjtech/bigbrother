@@ -1,7 +1,7 @@
 
 const config = {
 	server: 'api',
-	// server: 'http://localhost:8000/api',
+	// server: 'http://localhost:3000/api',
 }
 
 function getFetchOptions() {

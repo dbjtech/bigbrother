@@ -127,7 +127,7 @@ class QueryForm_ extends React.Component {
 			rows.unshift(titles)
 			return rows.join('\n')
 		}
-		const blob = new Blob([toCsv], { type: 'application/csv;charset=utf-8' })
+		const blob = new Blob([toCsv(this.state.rows)], { type: 'application/csv;charset=utf-8' })
 		saveAs(blob, 'log.csv')
 		message.info('export .csv file succeed')
 	}
