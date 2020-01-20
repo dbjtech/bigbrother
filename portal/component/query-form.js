@@ -119,18 +119,15 @@ class QueryForm_ extends React.Component {
 	}
 
 	onDowloadLog = () => {
-		const data = []
-		if (this.state.rows.length > 0) {
-			this.state.rows.forEach((e) => {
-				if (e.key === 0) {
-					data.push(Object.keys(e))
-				} else {
-					data.push(Object.values(e))
-				}
-			})
+		const toCsv = (report, titles = R.keys(R.head(report))) => {
+			const rows = R.pipe(
+				R.map(e => titles.map(t => String(e[t]).replace(/,/g, ' '))),
+				R.map(R.join(',')),
+			)(report)
+			rows.unshift(titles)
+			return rows.join('\n')
 		}
-		const jsonStr = data.join('\n')
-		const blob = new Blob([jsonStr], { type: 'application/csv;charset=utf-8' })
+		const blob = new Blob([toCsv], { type: 'application/csv;charset=utf-8' })
 		saveAs(blob, 'log.csv')
 		message.info('export .csv file succeed')
 	}
