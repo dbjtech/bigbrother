@@ -1,7 +1,8 @@
 import R from 'ramda'
 import moment from 'moment'
 import React from 'react'
-import { Form, Button, Input, DatePicker, message } from 'antd'
+import { saveAs } from 'file-saver'
+import { Form, Menu, Dropdown, Icon, Button, Input, DatePicker, message } from 'antd'
 import api from '../model/api'
 import { QuerySelect } from './select'
 
@@ -112,45 +113,77 @@ class QueryForm_ extends React.Component {
 		this.setState({ pauseQueryFlag: true })
 	}
 	
+	onPrintToConsole = () => {
+		console.log(this.state.rows)
+		message.info('Please press on F12')
+	}
+
+	onDowloadLog = () => {
+		const toCsv = (report, titles = R.keys(R.head(report))) => {
+			const rows = R.pipe(
+				R.map(e => titles.map(t => String(e[t]).replace(/,/g, ' '))),
+				R.map(R.join(',')),
+			)(report)
+			rows.unshift(titles)
+			return rows.join('\n')
+		}
+		const blob = new Blob([toCsv(this.state.rows)], { type: 'application/csv;charset=utf-8' })
+		saveAs(blob, 'log.csv')
+		message.info('export .csv file succeed')
+	}
+
 	render() {
 		const { getFieldDecorator } = this.props.form
+		const menu = (
+			<Menu>
+				<Menu.Item key="1" onClick={() => this.onPrintToConsole()}>Print to console</Menu.Item>
+				<Menu.Item key="2" onClick={() => this.onDowloadLog()}>Dowload log</Menu.Item>
+			</Menu>
+		)
 		return (
 			<Form layout='inline'>
 				<Form.Item>
-				{getFieldDecorator('hostname')(
-					<QuerySelect placeholder='Host Name' style={{ width: 150 }} dataApi={api.queryHostnames} allowClear></QuerySelect>
-				)}
+					{getFieldDecorator('hostname')(
+						<QuerySelect placeholder='Host Name' style={{ width: 150 }} dataApi={api.queryHostnames} allowClear></QuerySelect>
+					)}
 				</Form.Item>
 				<Form.Item>
-				{getFieldDecorator('app_name')(
-					<QuerySelect placeholder='App Name' style={{ width: 150 }} dataApi={api.queryAppNames} allowClear></QuerySelect>
-				)}
+					{getFieldDecorator('app_name')(
+						<QuerySelect placeholder='App Name' style={{ width: 150 }} dataApi={api.queryAppNames} allowClear></QuerySelect>
+					)}
 				</Form.Item>
 				<Form.Item>
-				{getFieldDecorator('timeRange', {
-					initialValue: [moment().subtract(1, 'day'), moment()],
-				})(
-					<DatePicker.RangePicker
-						showTime='true'
-						format={TimeFormat}
-					/>
-				)}
+					{getFieldDecorator('timeRange', {
+						initialValue: [moment().subtract(1, 'day'), moment()],
+					})(
+						<DatePicker.RangePicker
+							showTime='true'
+							format={TimeFormat}
+						/>
+					)}
 				</Form.Item>
 				<Form.Item>
-				{getFieldDecorator('keyword')(
-					<Input.Search
-						placeholder='Keyword'
-						onSearch={() => this.onQuery()}
-						disabled={this.state.loading}
-						enterButton
-					/>
-				)}
+					{getFieldDecorator('keyword')(
+						<Input.Search
+							placeholder='Keyword'
+							onSearch={() => this.onQuery()}
+							disabled={this.state.loading}
+							enterButton
+						/>
+					)}
 				</Form.Item>
 				<Form.Item style={{ display: !this.state.loading && this.state.lastQuery ? 'inline-block' : 'none' }}>
 					<Button type="primary" icon='sync' onClick={() => this.onQuery(true)}>Load More</Button>
 				</Form.Item>
 				<Form.Item style={{ display: this.state.loading && this.state.lastQuery ? 'inline-block' : 'none' }}>
 					<Button type="primary" icon='loading' onClick={() => this.pauseQuery()}>Pause</Button>
+				</Form.Item>
+				<Form.Item>
+					<Dropdown overlay={menu}>
+						<Button>
+						Operation <Icon type="down" />
+						</Button>
+					</Dropdown>
 				</Form.Item>
 				<Form.Item>
 					<p>Load: {this.state.meta.offset + this.state.meta.docs}/{this.state.meta.total}, {this.state.rows.length} Lines.</p>

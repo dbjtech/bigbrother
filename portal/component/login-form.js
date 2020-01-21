@@ -22,6 +22,7 @@ class LoginForm_ extends React.Component {
 			this.props.onLogin(rs)
 		} catch (e) {
 			if (e instanceof Error) {
+				console.error(e.stack)
 				message.error(e.message)
 			} else {
 				message.error(`Invalid ${Object.keys(e).join(',')}`)
@@ -37,14 +38,14 @@ class LoginForm_ extends React.Component {
 					<div style={{ color: 'gray', fontSize: 40, textAlign: 'center', margin: 30 }}>📜Bigbrother</div>
 				</Form.Item>
 				<Form.Item>
-				{getFieldDecorator('username', { rules: [{ required: true, message: 'Please input your username!' }] })(
-					<Input prefix={<Icon type='user' />} placeholder='Username' />
-				)}
+					{getFieldDecorator('username', { rules: [{ required: true, message: 'Please input your username!' }] })(
+						<Input prefix={<Icon type='user' />} placeholder='Username' />
+					)}
 				</Form.Item>
 				<Form.Item>
-				{getFieldDecorator('password', { rules: [{ required: true, message: 'Please input your password!' }] })(
-					<Input prefix={<Icon type='lock' />} placeholder='Password' type='password' />
-				)}
+					{getFieldDecorator('password', { rules: [{ required: true, message: 'Please input your password!' }] })(
+						<Input prefix={<Icon type='lock' />} placeholder='Password' type='password' />
+					)}
 				</Form.Item>
 				<Button type='primary' htmlType='submit' style={{ width: '100%' }}>Login</Button>
 			</Form>
